@@ -66,7 +66,7 @@ cd perceptionX-main
 Create a new file named `.env` in the root of your `perceptionX-main` directory. This file will store your sensitive configurations.
 
 dotenv
-# .env
+## .env
 MONGO_URI="mongodb+srv://<username>:<password>@cluster0.azktf3m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 PORT=3000
 ### 4. Install Node.js Dependencies
@@ -74,13 +74,13 @@ From your project root directory, install all Node.js packages:
 npm install
 ### 5. Set up Python Virtual Environment and Dependencies
 A virtual environment isolates your Python project's dependencies from your system's global Python installation, preventing conflicts.
-# Create the virtual environment named 'venv'
+## Create the virtual environment named 'venv'
 python -m venv venv
 
-# Activate the virtual environment
-# For Windows (PowerShell or Command Prompt):
+## Activate the virtual environment
+## For Windows (PowerShell or Command Prompt):
 .\venv\Scripts\activate
-# For macOS/Linux (Bash/Zsh):
+## For macOS/Linux (Bash/Zsh):
 source venv/bin/activate
 then
 pip install -r requirements.txt
@@ -91,7 +91,7 @@ Create a directory named yolov11 in your project root if it doesn't already exis
 Place your best.pt model file inside the ./yolov11 directory.
 Example Path: perceptionX-main/yolov11/best.pt
 
-###7. Start the Application
+### 7. Start the Application
 With all dependencies installed and configurations set, you can now start the application.
 # Ensure you are in the project root and your Python virtual environment is activated
 node app.js
