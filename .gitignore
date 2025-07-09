@@ -1,0 +1,53 @@
+
+# Node.js dependencies
+/node_modules
+
+# Python virtual environment
+/venv
+/.venv # Some tools create it as .venv
+
+# Environment variables
+.env
+
+# YOLO/Ultralytics specific outputs
+/runs
+*.pt # YOLO model weights, e.g., best.pt (if you don't want to track them)
+# If you DO want to track best.pt, you can comment out or remove the above line
+# and explicitly ignore other types of weights if needed.
+# Example:
+# /yolov11/*.pt # If you have best.pt inside yolov11 and want to ignore it
+
+# Temporary files generated during processing
+*.mp4 # If processed videos are temporarily saved
+*.avi # If intermediate video formats are saved
+*.jpg # If processed images are temporarily saved
+temp_video.mp4 # Specific temporary file names from your Python script
+temp_output.avi # Specific temporary file names from your Python script
+
+# Operating System generated files
+.DS_Store # macOS
+Thumbs.db # Windows
+desktop.ini # Windows
+
+# VS Code specific files
+.vscode/
+
+# Editor/IDE specific temp files
+*.swp # Vim swap files
+*.bak # Backup files
+*~    # Emacs backup files
+
+# npm debug logs
+npm-debug.log*
+.npm
+
+# Yarn integrity file
+.yarn-integrity
+
+# Other common temporary or build artifacts
+*.log
+*.tmp
+*.bak
+*.exe
+*.dll
+*.so
