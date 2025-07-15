@@ -1,0 +1,9 @@
+ultralytics
+motor[asyncio]
+Pillow
+numpy
+opencv-python-headless
+imageio-ffmpeg
+matplotlib
+python-dotenv
+
