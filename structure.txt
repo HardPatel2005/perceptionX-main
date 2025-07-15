@@ -1,0 +1,58 @@
+.
+├── .gitattributes
+├── .gitignore
+├── README.md
+├── Train_YOLO_Models.ipynb
+├── backend-nodejs
+│   ├── .nixpacks.toml
+│   ├── app.js
+│   ├── models
+│   │   └── perceps.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── assets
+│   │   │   └── dark.mp4
+│   │   ├── css
+│   │   │   └── style.css
+│   │   └── js
+│   │       └── script.js
+│   └── views
+│       ├── layouts
+│       │   └── boilerplate.ejs
+│       ├── perceps
+│       │   ├── detect.ejs
+│       │   └── index.ejs
+│       └── train
+│           ├── args.yaml
+│           ├── events.out.tfevents.1739080548.ip-10-192-11-121.10977.0
+│           ├── labels.jpg
+│           ├── labels_correlogram.jpg
+│           ├── results.csv
+│           ├── train_batch0.jpg
+│           ├── train_batch1.jpg
+│           ├── train_batch2.jpg
+│           ├── train_batch21105.jpg
+│           ├── train_batch21106.jpg
+│           ├── train_batch21107.jpg
+│           ├── val_batch0_labels.jpg
+│           ├── val_batch0_pred.jpg
+│           ├── val_batch1_labels.jpg
+│           ├── val_batch1_pred.jpg
+│           ├── val_batch2_labels.jpg
+│           ├── val_batch2_pred.jpg
+│           └── weights
+│               └── last.pt
+├── render.yaml
+├── structure.txt
+└── yolo-python
+    ├── .env
+    ├── app.py
+    ├── requirements.txt
+    ├── runs
+    │   └── detect
+    ├── structure.txt
+    └── yolov11
+        └── best.pt
+
+16 directories, 40 files

@@ -218,7 +218,14 @@ os.environ["ULTRALYTICS_CONFIG_DIR"] = "/tmp/Ultralytics"
 
 
 # 🔹 MongoDB Connection
-MONGO_URI = "mongodb+srv://aitool3994:RLzzhTG9xHRfyf01@cluster0.azktf3m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+from dotenv import load_dotenv
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGODB_URI")
+if not MONGO_URI:
+    print("❌ MONGODB_URI not found in .env file")
+    exit(1)
+
 DATABASE_NAME = "test"
 COLLECTION_NAME = "files"
 
