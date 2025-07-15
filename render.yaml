@@ -19,4 +19,4 @@ services:
     startCommand: gunicorn app:app
     envVars:
       - key: MONGO_URI
-        value: mongodb+srv://aitool3994:RLzzhTG9xHRfyf01@cluster0.azktf3m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        value: mongodb+srv://aitool3994:RLzzhTG9xHRfyf01@cluster0.azktf3m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0

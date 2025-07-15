@@ -3,7 +3,6 @@
 ├── .gitignore
 ├── README.md
 ├── Train_YOLO_Models.ipynb
-├── app.py
 ├── backend-nodejs
 │   ├── .env
 │   ├── .nixpacks.toml
@@ -46,6 +45,7 @@
 │           └── weights
 │               └── last.pt
 ├── render.yaml
+├── requirements.txt
 ├── structure.txt
 └── yolo-python
     ├── .env

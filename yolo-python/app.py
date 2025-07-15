@@ -236,6 +236,34 @@ collection = db[COLLECTION_NAME]
 
 # **UPDATED:** Path to YOLO weights
 weights_path = "./yolov11/best.pt"
+# import requests
+import os
+import requests  # ← Required to download from Hugging Face
+
+HF_URL = "https://huggingface.co/hardbhai/yolo-best/resolve/main/best.pt"
+weights_path = "./yolov11/best.pt"
+
+def download_model_if_missing():
+    if not os.path.exists(weights_path):
+        print("📥 Downloading best.pt from Hugging Face...")
+        os.makedirs(os.path.dirname(weights_path), exist_ok=True)
+        response = requests.get(HF_URL)
+        if response.status_code == 200:
+            # Check for HTML error page
+            if response.content.strip().startswith(b'<!DOCTYPE html>'):
+                print("❌ ERROR: Downloaded file is HTML, not a valid model.")
+                exit(1)
+            with open(weights_path, "wb") as f:
+                f.write(response.content)
+            print("✅ best.pt downloaded successfully!")
+        else:
+            print(f"❌ Failed to download: {response.status_code}")
+            exit(1)
+
+
+download_model_if_missing()
+
+
 
 def load_model():
     print(f"🔍 Checking if model exists: {weights_path}")
