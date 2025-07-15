@@ -9,7 +9,7 @@ services:
       - key: PORT
         value: 3000
       - key: MONGODB_URI
-        value: your-mongodb-uri
+        value: mongodb+srv://aitool3994:RLzzhTG9xHRfyf01@cluster0.azktf3m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 
   - type: web
     name: yolo-python-api
@@ -19,4 +19,4 @@ services:
     startCommand: gunicorn app:app
     envVars:
       - key: MONGO_URI
-        value: your-mongodb-uri
+        value: mongodb+srv://aitool3994:RLzzhTG9xHRfyf01@cluster0.azktf3m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
