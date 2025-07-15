@@ -1,5 +1,8 @@
 ultralytics
-motor[asyncio]
+motor
+flask
+flask-cors
+gunicorn
 Pillow
 numpy
 opencv-python-headless

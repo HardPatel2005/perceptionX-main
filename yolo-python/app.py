@@ -190,35 +190,30 @@
 #         loop.run_until_complete(process_video(file_id, model))
 #     else:
 #         print("Invalid file type. Use 'image' or 'video'.")
-
-
-
-
-
 import sys
-import time
+import os
 import asyncio
-import base64
+import subprocess
+import tempfile
+from io import BytesIO
+
+import cv2
+import numpy as np
+import requests
+from PIL import Image
+from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from ultralytics import YOLO
-from PIL import Image
-import numpy as np
-import cv2
-import tempfile
-import subprocess
-import os
 import imageio_ffmpeg as ffmpeg
-from io import BytesIO
-from bson import ObjectId  
-
 import matplotlib
-matplotlib.use('Agg')  # Use a non-GUI backend to prevent font cache issues
+matplotlib.use('Agg')  # For headless environments like Render
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+
+# Ensure Ultralytics config doesn't attempt GUI access
 os.environ["ULTRALYTICS_CONFIG_DIR"] = "/tmp/Ultralytics"
 
-
-# 🔹 MongoDB Connection
-from dotenv import load_dotenv
+# 🔹 Load environment variables
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGODB_URI")
@@ -229,17 +224,12 @@ if not MONGO_URI:
 DATABASE_NAME = "test"
 COLLECTION_NAME = "files"
 
-#  Connect to MongoDB
+# 🔹 MongoDB Client
 client = AsyncIOMotorClient(MONGO_URI)
 db = client[DATABASE_NAME]
 collection = db[COLLECTION_NAME]
 
-# **UPDATED:** Path to YOLO weights
-weights_path = "./yolov11/best.pt"
-# import requests
-import os
-import requests  # ← Required to download from Hugging Face
-
+# 🔹 YOLO model download from Hugging Face
 HF_URL = "https://huggingface.co/hardbhai/yolo-best/resolve/main/best.pt"
 weights_path = "./yolov11/best.pt"
 
@@ -249,7 +239,6 @@ def download_model_if_missing():
         os.makedirs(os.path.dirname(weights_path), exist_ok=True)
         response = requests.get(HF_URL)
         if response.status_code == 200:
-            # Check for HTML error page
             if response.content.strip().startswith(b'<!DOCTYPE html>'):
                 print("❌ ERROR: Downloaded file is HTML, not a valid model.")
                 exit(1)
@@ -260,10 +249,7 @@ def download_model_if_missing():
             print(f"❌ Failed to download: {response.status_code}")
             exit(1)
 
-
 download_model_if_missing()
-
-
 
 def load_model():
     print(f"🔍 Checking if model exists: {weights_path}")
@@ -272,94 +258,81 @@ def load_model():
         exit(1)
     print(f" Model exists: {weights_path}")    
     model = YOLO(weights_path)
-    print(" YOLO model loaded successfully!")
+    print("✅ YOLO model loaded successfully!")
     return model
 
 async def fetch_file_from_mongo(file_id):
-    """Fetch file from MongoDB using a valid ObjectId."""
-    print(f" Searching for file ID: {file_id}")
-
+    print(f"🔍 Searching for file ID: {file_id}")
     try:
         object_id = ObjectId(file_id)
     except Exception as e:
-        print(f" Invalid ObjectId format: {e}")
+        print(f"❌ Invalid ObjectId format: {e}")
         return None
 
     file = await collection.find_one({"_id": object_id})
 
     if file:
-        print(f" File Found: {file['filename']}")
+        print(f"📁 File Found: {file['filename']}")
         file_data = file.get("data")
         if not file_data:
-            print(" File data is missing in MongoDB")
+            print("❌ File data is missing in MongoDB")
             return None
         return file_data
     else:
-        print(" File not found in MongoDB - Verify ID and Storage")
+        print("❌ File not found in MongoDB")
         return None
 
-async def process_image(file_id, model):
-    """Processes an image using YOLO and updates MongoDB."""
-    image_data = await fetch_file_from_mongo(file_id)
-
-    if not image_data:
-        print(" Image data is missing")
-        return
-
-    try:
-        image = Image.open(BytesIO(image_data))
-        image.verify()  # Check for corruption
-        image = Image.open(BytesIO(image_data)).convert("RGB")  
-    except Exception as e:
-        print(f" Image decoding error: {e}")
-        return
-
-    image_np = np.array(image)
-
-    # 🔹 Run YOLO Detection
-    results = model(image_np)
-    annotated_image = results[0].plot()
-
-    #  Encode Processed Image
-    _, buffer = cv2.imencode(".jpg", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
-    processed_image_binary = buffer.tobytes()  #  Convert to binary
-
-    await save_processed_file(file_id, processed_image_binary)
-
 async def save_processed_file(file_id, processed_data):
-    """Saves the processed file back to MongoDB as binary."""
     try:
         object_id = ObjectId(file_id)
     except Exception as e:
-        print(f" Invalid ObjectId format: {e}")
+        print(f"❌ Invalid ObjectId format: {e}")
         return
 
     result = await collection.update_one(
         {"_id": object_id},
-        {"$set": {"processedData": processed_data}}  #  Store binary directly
+        {"$set": {"processedData": processed_data}}
     )
 
     if result.modified_count > 0:
-        print(f" Processed file saved to MongoDB for file ID: {file_id}")
+        print(f"✅ Processed file saved to MongoDB for file ID: {file_id}")
     else:
-        print(" Failed to save processed file in MongoDB")
+        print("❌ Failed to save processed file in MongoDB")
 
-async def process_video(file_id, model):
-    """Processes a video using YOLO and updates MongoDB."""
-    file_data = await fetch_file_from_mongo(file_id)
-
-    if not file_data:
-        print(" Video data is missing in MongoDB")
+async def process_image(file_id, model):
+    image_data = await fetch_file_from_mongo(file_id)
+    if not image_data:
         return
 
-    #  Store video in a temporary file
+    try:
+        image = Image.open(BytesIO(image_data))
+        image.verify()
+        image = Image.open(BytesIO(image_data)).convert("RGB")
+    except Exception as e:
+        print(f"❌ Image decoding error: {e}")
+        return
+
+    image_np = np.array(image)
+    results = model(image_np)
+    annotated_image = results[0].plot()
+
+    _, buffer = cv2.imencode(".jpg", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
+    processed_image_binary = buffer.tobytes()
+
+    await save_processed_file(file_id, processed_image_binary)
+
+async def process_video(file_id, model):
+    file_data = await fetch_file_from_mongo(file_id)
+    if not file_data:
+        return
+
     temp_video_path = os.path.join(tempfile.gettempdir(), "temp_video.mp4")
     with open(temp_video_path, "wb") as f:
         f.write(file_data)
 
     cap = cv2.VideoCapture(temp_video_path)
     if not cap.isOpened():
-        print(" Error opening video file")
+        print("❌ Error opening video file")
         return
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -381,7 +354,7 @@ async def process_video(file_id, model):
         out.write(annotated_frame)
         processed_frames += 1
         progress = int((processed_frames / total_frames) * 100)
-        print(f"Progress: {progress}%")
+        print(f"📹 Video Processing Progress: {progress}%")
 
     cap.release()
     out.release()
@@ -420,4 +393,4 @@ if __name__ == "__main__":
     elif file_type.startswith("video"):
         loop.run_until_complete(process_video(file_id, model))
     else:
-        print("Invalid file type. Use 'image' or 'video'.")
+        print("❌ Invalid file type. Use 'image' or 'video'")
