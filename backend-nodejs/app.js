@@ -14,7 +14,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const fs = require("fs");
 const os = require("os");
-
+const FormData = require('form-data');
 const File = require(path.join(__dirname, "models", "perceps.js"));
 
 const app = express();
@@ -54,27 +54,31 @@ app.post("/process", upload.single("file"), async (req, res) => {
         return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const formData = new FormData();
-    formData.append("file", req.file.buffer, req.file.originalname);
+ const formData = new FormData();
+formData.append("file", req.file.buffer, {
+  filename: req.file.originalname,
+  contentType: req.file.mimetype,
+});
 
-    try {
-        const response = await axios.post(
-            "https://perceptionx-main-1.onrender.com/detect",
-            formData,
-            {
-                headers: formData.getHeaders(),
-            }
-        );
+try {
+    const response = await axios.post(
+        "https://perceptionx-main-1.onrender.com/detect",
+        formData,
+        {
+            headers: formData.getHeaders(),
+        }
+    );
 
-        res.json({
-            filename: response.data.filename,
-            message: response.data.message,
-        });
+    res.json({
+        filename: response.data.filename,
+        message: response.data.message,
+    });
 
-    } catch (error) {
-        console.error("Detection failed:", error.message);
-        res.status(500).json({ error: "Detection failed" });
-    }
+} catch (error) {
+    console.error("Detection failed:", error.message);
+    res.status(500).json({ error: "Detection failed" });
+}
+
 });
 
 // Start server
