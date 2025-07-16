@@ -15,10 +15,10 @@ services:
     name: yolo-python-api
     env: python
     rootDir: yolo-python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: PORT
-        value: 10000  # Render default for Python
+        value: 10000
       - key: MONGODB_URI
         value: mongodb+srv://aitool3994:RLzzhTG9xHRfyf01@cluster0.azktf3m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
