@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
-const { spawn } = require("child_process");
+const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
 const methodOverride = require("method-override");
@@ -54,82 +54,26 @@ app.post("/process", upload.single("file"), async (req, res) => {
         return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const fileType = req.file.mimetype.startsWith("image") ? "image" : "video";
+    const formData = new FormData();
+    formData.append("file", req.file.buffer, req.file.originalname);
+
     try {
-        const newFile = new File({
-            filename: req.file.originalname,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            data: Buffer.from(req.file.buffer),
-            processedData: null
-        });
-
-        const savedFile = await newFile.save();
-        const pythonScript = path.join(__dirname, "..", "yolo-python", "app.py");
-        const pythonProcess = spawn("python", [pythonScript, savedFile._id.toString(), fileType]);
-
-        pythonProcess.stdout.on("data", (data) => {
-            console.log(`Python Output: ${data.toString()}`);
-            const progressMatch = data.toString().match(/Progress: (\d+)%/);
-            if (progressMatch) {
-                io.emit("progress", parseInt(progressMatch[1]));
+        const response = await axios.post(
+            "https://perceptionx-main-1.onrender.com/detect",
+            formData,
+            {
+                headers: formData.getHeaders(),
             }
-        });
+        );
 
-        pythonProcess.stderr.on("data", (data) => {
-            console.error(`Python Error: ${data.toString()}`);
-        });
-
-        pythonProcess.on("close", (code) => {
-            console.log("Python process closed with code:", code);
-            if (code === 0) {
-                io.emit("progress", 100);
-                res.json({ fileId: savedFile._id });
-            } else {
-                res.status(500).json({ error: "Processing failed" });
-            }
+        res.json({
+            filename: response.data.filename,
+            message: response.data.message,
         });
 
     } catch (error) {
-        console.error("Error processing file:", error);
-        res.status(500).json({ error: "Error processing file." });
-    }
-});
-
-app.get("/file/:id", async (req, res) => {
-    try {
-        const file = await File.findById(req.params.id);
-        if (!file) {
-            return res.status(404).json({ error: "File not found" });
-        }
-
-        res.set("Content-Type", file.mimetype);
-        res.send(file.data);
-    } catch (error) {
-        console.error("Error fetching file:", error);
-        res.status(500).json({ error: "Error retrieving file." });
-    }
-});
-
-app.get("/file/:id/processed", async (req, res) => {
-    try {
-        const file = await File.findById(req.params.id);
-        if (!file || !file.processedData) {
-            return res.status(404).json({ error: "Processed file not found" });
-        }
-
-        if (file.mimetype.startsWith("video")) {
-            res.set("Content-Type", file.mimetype);
-            res.send(file.processedData);
-        } else if (file.mimetype.startsWith("image")) {
-            res.set("Content-Type", "image/jpeg");
-            res.send(file.processedData);
-        } else {
-            res.status(400).json({ error: "Unsupported file type" });
-        }
-    } catch (error) {
-        console.error("Error retrieving processed file:", error);
-        res.status(500).json({ error: "Error retrieving file." });
+        console.error("Detection failed:", error.message);
+        res.status(500).json({ error: "Detection failed" });
     }
 });
 
