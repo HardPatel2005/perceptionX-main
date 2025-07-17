@@ -33,8 +33,8 @@ app.use(express.static(path.join(__dirname, "/public")));
 // MongoDB Connection
 const dbUrl = process.env.MONGODB_URI;
 mongoose.connect(dbUrl)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.error("❌ MongoDB Connection Failed:", err));
+    .then(() => console.log("\u2705 MongoDB Connected"))
+    .catch(err => console.error("\u274C MongoDB Connection Failed:", err));
 
 // Multer Configuration (Store in Memory)
 const storage = multer.memoryStorage();
@@ -54,35 +54,38 @@ app.post("/process", upload.single("file"), async (req, res) => {
         return res.status(400).json({ error: "No file uploaded" });
     }
 
- const formData = new FormData();
-formData.append("file", req.file.buffer, {
-  filename: req.file.originalname,
-  contentType: req.file.mimetype,
-});
-
-try {
-    const response = await axios.post(
-        "https://perceptionx-main-1.onrender.com/detect",
-        formData,
-        {
-            headers: formData.getHeaders(),
-        }
-    );
-
-    res.json({
-        filename: response.data.filename,
-        message: response.data.message,
+    const formData = new FormData();
+    formData.append("file", req.file.buffer, {
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
     });
 
-} catch (error) {
-    console.error("Detection failed:", error.message);
-    res.status(500).json({ error: "Detection failed" });
-}
+    try {
+        const response = await axios.post(
+            "http://localhost:10000/detect",
+            formData,
+            {
+                headers: formData.getHeaders(),
+            }
+        );
 
+        // \u2705 Log the content-type here (inside try block)
+        const contentType = response.headers["content-type"];
+        console.log("File content type from detect API:", contentType);
+
+        res.json({
+            filename: response.data.filename,
+            message: response.data.message,
+        });
+
+    } catch (error) {
+        console.error("Detection failed:", error.message);
+        res.status(500).json({ error: "Detection failed" });
+    }
 });
 
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}/`);
+    console.log(`\uD83D\uDE80 Server running on http://localhost:${PORT}/`);
 });

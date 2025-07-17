@@ -13,6 +13,7 @@ env/
 /yolo-python/.env
 /yolo-python/env/
 /yolo-python/venv/
+/yolo-python/venv310/
 /yolo-python/.venv/
 /yolo-python/*.py[cod]
 /yolo-python/.mypy_cache/
