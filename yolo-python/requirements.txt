@@ -1,12 +1,14 @@
 flask
 flask-cors
 gunicorn
-motor
-ultralytics
-numpy
+ultralytics==8.0.20
+torch==2.2.2
+torchvision==0.17.2
+numpy<2.0
 Pillow
 opencv-python-headless==4.11.0.86
 imageio-ffmpeg
 matplotlib
 python-dotenv
-requests  # if you're downloading models from HuggingFace
+requests
+motor

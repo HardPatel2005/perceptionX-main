@@ -1,0 +1,12 @@
+.
+├── .env
+├── app.py
+├── process.py
+├── requirements.txt
+├── runs
+│   └── detect
+├── structure.txt
+└── yolov11
+    └── best.pt
+
+4 directories, 6 files
